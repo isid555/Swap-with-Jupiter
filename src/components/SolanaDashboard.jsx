@@ -1,39 +1,37 @@
 import React from "react";
 import useSolanaData from "../hooks/useSolanaData";
-
-const walletAddress = "AJD4eVPKZ9jX63wwdy6Sf8K1BYcQ6KyDSTinPbidDzE2"; // Replace with actual address
-
-const tokensA = [
-    { address: "A5jm259qa9F6MGTxybFAsTa7fUAsbWmuUKmP6Y4gpump", balance: 1 },
-    { address: "68yeZ756U5Wvxcj5GTRxHhiSXZvdqetUHWbAoi2KvdPP", balance: 2 },
-    { address: "CdfRUhtND1b7hYJd8he5tCeW3GPCJmqrZzrh7rvEpump", balance: 3 },
-];
-
-// using tokenA?
+import { useWallet } from "@solana/wallet-adapter-react";
+import useTokenBalance from "../hooks/useTokenBalance.js";
+import { Card, CardContent, Typography, CircularProgress } from "@mui/material";
 
 const SolanaDashboard = () => {
-    const { solBalance, tokenBalances, prices, loading, error } = useSolanaData(walletAddress, tokensA , 5000);
+    const wallet = useWallet();
+    const { tokens } = useTokenBalance(wallet.publicKey, 0);
+    const { solBalance, tokenBalances, prices, loading, error } = useSolanaData(wallet.publicKey, tokens, 5000);
 
-    if (loading) return <p>Loading wallet data...</p>;
-    if (error) return <p>Error: {error}</p>;
-
-
+    if (loading) return <CircularProgress className="text-green-500" />;
+    if (error) return <Typography className="text-red-500">Error: {error}</Typography>;
 
     return (
-        <div>
-            <h2>Solana Wallet Overview</h2>
-            <p><strong>SOL Balance:</strong> {solBalance} SOL</p>
-            <p><strong>SOL Price:</strong> ${prices.solPrice}</p>
-            <h3>Token Balances & Prices</h3>
-            <ul>
-                {/*Change it to original tokens in mainnet , tokenBalances*/}
-                {tokensA.map((token) => (
-                    <li key={token.address}>
-                        Mint: {token.address} | Balance: {token.balance} | Price: ${prices.tokenPrices[token.address] || "N/A"}  | Amount (in USD) : $ {token.balance * prices.tokenPrices[token.address]}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Card className="max-w-3xl mx-auto mt-6 bg-gray-800 text-white shadow-xl rounded-lg p-6">
+            <CardContent>
+                <Typography variant="h5" className="text-green-400 font-bold mb-4">Solana Wallet Overview</Typography>
+                <Typography variant="h6" className="text-yellow-300">SOL Balance: <span className="font-semibold">{solBalance} SOL</span></Typography>
+                <Typography variant="h6" className="text-blue-300 mt-2">SOL Price: <span className="font-semibold">${prices.solPrice}</span></Typography>
+
+                <Typography variant="h6" className="text-green-400 mt-4">Token Balances & Prices</Typography>
+                <ul className="space-y-4 mt-2">
+                    {tokenBalances.map((token) => (
+                        <li key={token.address} className="border-b border-gray-600 pb-4">
+                            <Typography variant="body1" className="text-yellow-300">Mint: {token.mintAddress}</Typography>
+                            <Typography variant="body2" className="text-gray-400">Balance: {token.balance}</Typography>
+                            <Typography variant="body2" className="text-blue-300">Price: ${prices.tokenPrices[token.mintAddress] || "N/A"}</Typography>
+                            <Typography variant="body2" className="text-green-300">Amount (in USD): ${token.balance * prices.tokenPrices[token.mintAddress] || "N/A"}</Typography>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
+        </Card>
     );
 };
 

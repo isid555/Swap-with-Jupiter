@@ -12,12 +12,13 @@ const useMultipleTokenMetadata = (tokens) => {
             try {
                 setLoading(true);
 
-                // Extract mint addresses
-                const mintAddresses = tokens.map(token => token.account.data.parsed.info.mint);
+
+                const mintAddresses = tokens.map(token => token.mintAddress);
 
                 // Fetch metadata for all tokens
                 const metadataResults = await Promise.all(
                     mintAddresses.map(async (mint) => {
+
                         try {
                             const response = await fetch(`https://api.jup.ag/tokens/v1/token/${mint}`);
                             if (!response.ok) throw new Error("Failed to fetch metadata");

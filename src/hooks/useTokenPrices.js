@@ -3,7 +3,8 @@ import axios from "axios";
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 
-const useTokenPrices = (solAmount, tokens, interval = 5000) => {
+const useTokenPrices = (solAmount, tokens, interval ) => {
+
     const [prices, setPrices] = useState({ solPrice: 0, tokenPrices: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,29 +19,30 @@ const useTokenPrices = (solAmount, tokens, interval = 5000) => {
 
 
 
-                // Fetch token prices
                 const tokenPrices = {};
                 await Promise.all(
                     tokens.map(async (token) => {
                         try {
                             const tokenResponse = await axios.get(
-                                `https://api.jup.ag/price/v2?ids=${token.address}`,
+                                `https://api.jup.ag/price/v2?ids=${token.mintAddress}`,
                                 {headers: {"Content-Type":"application/json"}}
                             );
 
 
+                            tokenPrices[token.mintAddress] = tokenResponse.data?.data?.[token.mintAddress]?.price || 0;
 
-                            tokenPrices[token.address] = tokenResponse.data?.data?.[token.address]?.price || 0;
+
+
+
                         } catch (tokenError) {
                             console.error(`Error fetching price for ${token.address}:`, tokenError);
                         }
                     })
                 );
 
-                if (isMounted) {
                     setPrices({ solPrice, tokenPrices });
                     setLoading(false);
-                }
+
             } catch (err) {
                 if (isMounted) {
                     setError(err.message);
@@ -53,7 +55,7 @@ const useTokenPrices = (solAmount, tokens, interval = 5000) => {
         const intervalId = setInterval(fetchPrices, interval);
 
         return () => {
-            isMounted = false; // Prevent setting state after unmount
+            isMounted = false;
             clearInterval(intervalId);
         };
     }, [solAmount, JSON.stringify(tokens), interval]); // Ensure proper dependency tracking

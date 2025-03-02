@@ -1,33 +1,38 @@
 import React from "react";
 import useMultipleTokenMetadata from "../hooks/useMultipleTokenMetadata";
-
-const tokensA = [
-    { account: { data: { parsed: { info: { mint: "68yeZ756U5Wvxcj5GTRxHhiSXZvdqetUHWbAoi2KvdPP", tokenAmount: { uiAmount: 100 } } } } } },
-    { account: { data: { parsed: { info: { mint: "5zE8B2YuNegzQKdkKv4hWgL9k8h39f1zsnT1NHdj1NQ3", tokenAmount: { uiAmount: 50 } } } } } },
-    { account: { data: { parsed: { info: { mint: "CdfRUhtND1b7hYJd8he5tCeW3GPCJmqrZzrh7rvEpump", tokenAmount: { uiAmount: 200 } } } } } }
-];
+import useTokenBalance from "../hooks/useTokenBalance.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Card, CardContent, Typography, CircularProgress } from "@mui/material";
 
 const TokenMetadata = () => {
-    const { metadataList, loading, error } = useMultipleTokenMetadata(tokensA);
+    const wallet = useWallet();
+    const { tokens } = useTokenBalance(wallet.publicKey, 0);
+    const { metadataList, loading, error } = useMultipleTokenMetadata(tokens);
 
-    if (loading) return <p>Loading token metadata...</p>;
-    if (error) return <p>Error: {error}</p>;
+    if (loading) return <CircularProgress className="text-green-500" />;
+    if (error) return <Typography className="text-red-500">Error: {error}</Typography>;
 
     return (
-        <div>
-            <h2>Solana Token Metadata</h2>
-            <ul>
-                {metadataList.map((metadata, index) => (
-                    <li key={metadata.address}>
-                        {metadata.logoURI && <img src={metadata.logoURI} alt={metadata.name} width="50" />}
-                        <h3>{metadata.name} ({metadata.symbol})</h3>
-                        <p>Mint Address: {metadata.address}</p>
-                        <p>Decimals: {metadata.decimals}</p>
-                        <p>Balance: {tokensA[index].account.data.parsed.info.tokenAmount.uiAmount}</p>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Card className="max-w-2xl mx-auto mt-6 bg-gray-800 text-white shadow-xl rounded-lg p-6">
+            <CardContent>
+                <Typography variant="h5" className="text-green-400 font-bold mb-4">Solana Token Metadata</Typography>
+                <ul className="space-y-4">
+                    {metadataList.map((metadata) => (
+                        <li key={metadata.address} className="flex items-center gap-4 border-b border-gray-600 pb-4">
+                            {metadata.logoURI && (
+                                <img src={metadata.logoURI} alt={metadata.name} width="50" className="rounded-full" />
+                            )}
+                            <div>
+                                <Typography variant="h6" className="text-yellow-300">{metadata.name} ({metadata.symbol})</Typography>
+                                <Typography variant="body2" className="text-gray-400">Mint Address: {metadata.address}</Typography>
+                                <Typography variant="body2" className="text-blue-300">Decimals: {metadata.decimals}</Typography>
+                                <Typography variant="body2" className="text-green-300">Balance: {tokens.balance}</Typography>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
+        </Card>
     );
 };
 

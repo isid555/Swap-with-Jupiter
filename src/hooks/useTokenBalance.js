@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
-const SOLANA_RPC = "https://api.devnet.solana.com";
+const SOLANA_RPC = "https://solana-mainnet.g.alchemy.com/v2/-rj1mfqdqwB4iBYlzUTBMLFir79YxHAi";
 const connection = new Connection(SOLANA_RPC, "confirmed");
 
-const useTokenBalance = (walletAddress, refreshInterval = 10000) => {
+const useTokenBalance = (walletAddress, refreshInterval) => {
     const [solBalance, setSolBalance] = useState(0);
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+
 
     useEffect(() => {
         const fetchBalances = async () => {
@@ -19,7 +21,8 @@ const useTokenBalance = (walletAddress, refreshInterval = 10000) => {
 
             try {
                 setLoading(true);
-                const walletPublicKey = new PublicKey(walletAddress);
+
+                const walletPublicKey = new PublicKey(walletAddress.toString());
 
                 // Get SOL balance
                 const solBalanceLamports = await connection.getBalance(walletPublicKey);
