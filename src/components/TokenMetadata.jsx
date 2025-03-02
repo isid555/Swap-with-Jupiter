@@ -11,7 +11,7 @@ const TokenMetadata = () => {
 
     if (loading) return <CircularProgress className="text-green-500" />;
     if (error) return <Typography className="text-red-500">Error: {error}</Typography>;
-
+        if(!wallet) return <Typography>Connect to wallet</Typography>
     return (
         <Card className="max-w-2xl mx-auto mt-6 bg-gray-800 text-white shadow-xl rounded-lg p-6">
             <CardContent>
