@@ -5,6 +5,7 @@ import { Button, MenuItem, Select, TextField } from "@mui/material";
 import useTokenBalance from "../hooks/useTokenBalance.js";
 import useTokenPrices from "../hooks/useTokenPrices.js";
 import useMultipleTokenMetadata from "../hooks/useMultipleTokenMetadata.js";
+import TransactionPopup from "./TweetTransaction.jsx";
 
 const SwapInterface = () => {
     const { publicKey } = useWallet();
@@ -112,8 +113,12 @@ const SwapInterface = () => {
             {transactionUrl && (
                 <p className="text-green-400 mt-3 text-center">
                     Success! View on <a href={transactionUrl} target="_blank" rel="noopener noreferrer" className="underline">Solscan</a>
+
+                    {transactionUrl && <TransactionPopup transactionUrl={transactionUrl}  />}
+
                 </p>
             )}
+            <TransactionPopup transactionUrl={"https://solscan.io/tx/5NT5BZyvLJzWXTepo9uvK8z2VHMCGfDAZvStE9GbHrsSNBi3gFR1k4fN7std48VxpKu2MrukcVpczpGzuCf1Cqce"}  />
         </div>
     );
 };
