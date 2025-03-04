@@ -26,7 +26,6 @@ const TokenMetadata = () => {
                                 <Typography variant="h6" className="text-yellow-300">{metadata.name} ({metadata.symbol})</Typography>
                                 <Typography variant="body2" className="text-gray-400">Mint Address: {metadata.address}</Typography>
                                 <Typography variant="body2" className="text-blue-300">Decimals: {metadata.decimals}</Typography>
-                                <Typography variant="body2" className="text-green-300">Balance: {tokens.balance}</Typography>
                             </div>
                         </li>
                     ))}

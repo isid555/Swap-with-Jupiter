@@ -4,19 +4,19 @@ import {PublicKey, Connection, VersionedTransaction, Transaction} from "@solana/
 import {
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    getOrCreateAssociatedTokenAccount,
     getAssociatedTokenAddress,
-    createAssociatedTokenAccountInstruction,
-    getAssociatedTokenAddressSync
+    createAssociatedTokenAccountInstruction
 } from "@solana/spl-token";
 
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
 export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCOUNT) => {
+
+
     const { publicKey, wallet } = useWallet(); // Single useWallet call
 
     const connection = new Connection(
-        "https://solana-mainnet.g.alchemy.com/v2/-rj1mfqdqwB4iBYlzUTBMLFir79YxHAi",
+        "https://thrilling-thrumming-breeze.solana-mainnet.quiknode.pro/b0abdc3cdbe744f9f0ca95f38714ba80e4fde580/",
         "confirmed"
     );
 
@@ -27,10 +27,11 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
     const [transactionUrl, setTransactionUrl] = useState(null);
 
     const swapTokens = async () => {
-        if (!connection || !publicKey) {
+        if (!connection || !publicKey || !wallet || !wallet.adapter) {
             setError("Wallet not connected");
             return;
         }
+
 
         try {
             setLoading(true);
@@ -42,12 +43,10 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
 
 
 
-            const blockhash = await connection.getLatestBlockhash();
-
 
 // Calculate the merchant's associated token account address
 
-            console.log("hi1")
+
 
             const merchantUSDCTokenAccount = await getAssociatedTokenAddress(
                 new PublicKey(USDC_MINT),  // The USDC mint address
@@ -57,47 +56,94 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
                 ASSOCIATED_TOKEN_PROGRAM_ID  // Associated token program ID (default)
             );
 
-            console.log("hi2")
+            const MerchentATAaccountInfo = await connection.getAccountInfo(merchantUSDCTokenAccount);
 
-// Create transaction to pay for the creation of the merchant's ATA
-            const transaction_M_ATA = new Transaction().add(
-                createAssociatedTokenAccountInstruction(
-                    publicKey,  // User's wallet (payer)
-                    merchantUSDCTokenAccount,  // New ATA for merchant
-                    new PublicKey(MERCHANT_ACCOUNT),  // Merchant as the owner
-                    new PublicKey(USDC_MINT)  // Token mint (USDC)
-                )
-            );
-            transaction_M_ATA.feePayer = publicKey;
-            transaction_M_ATA.recentBlockhash = blockhash.blockhash;
 
-        const payerKeypair = wallet.adapter.publicKey;
-            try {
-                const signature_M_ATA = await wallet.sendTransaction(transaction_M_ATA, connection, {
-                    signers: [payerKeypair], // Add any additional signers if required
-                });
 
-                // Confirm the transaction
-                await connection.confirmTransaction(signature_M_ATA, "finalized");
-                console.log(`Transaction successful: ${signature_M_ATA}`);
-            } catch (error) {
-                console.error("Error sending transaction:", error);
+            if(!MerchentATAaccountInfo){
+                // console.log("Merchent does'nt have an ATA for USDC Mint ! Creating ...")
+
+                const transaction_M_ATA = new Transaction().add(
+                    createAssociatedTokenAccountInstruction(
+                        publicKey,  // User's wallet (payer)
+                        merchantUSDCTokenAccount,  // New ATA for merchant
+                        new PublicKey(MERCHANT_ACCOUNT),  // Merchant as the owner
+                        new PublicKey(USDC_MINT)  // Token mint (USDC)
+                    )
+                );
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction_M_ATA.recentBlockhash = blockhash;
+                // transaction_M_ATA.lastValidBlockHeight = lastValidBlockHeight;
+                transaction_M_ATA.feePayer = publicKey;
+                // console.log(typeof  transaction_M_ATA)
+                // console.log(transaction_M_ATA)
+
+
+
+
+
+
+
+                try {
+
+                    // Sign & Send Transaction
+                    // console.log(1)
+                    const signedTx = await wallet.adapter.sendTransaction(transaction_M_ATA,connection,{
+                        preflightCommitment:"confirmed"
+                    });
+                    // console.log(2)
+
+
+                    // console.log("Transaction Signature:", signedTx);
+                    await connection.confirmTransaction(signedTx, "confirmed");
+                    // console.log(3)
+                } catch (error) {
+                    console.error("Error sending Merchant ATA creating transaction:", error);
+                }
+
+            }else
+            {
+                // console.log("Merchant USDC token account:", merchantUSDCTokenAccount.toBase58());
+            }
+            const MerchentATAaccountInfo2 = await connection.getAccountInfo(merchantUSDCTokenAccount);
+
+
+            if(!MerchentATAaccountInfo2){
+                return;
             }
 
+// if(!merchantUSDCTokenAccount){
+//     // Create transaction to pay for the creation of the merchant's ATA
+//
+//
+//     const payerKeypair = wallet.adapter.publicKey;
+//     try {
+//         const signature_M_ATA = await wallet.sendTransaction(transaction_M_ATA, connection, {
+//             signers: [payerKeypair], // Add any additional signers if required
+//         });
+//
+//         // Confirm the transaction
+//         await connection.confirmTransaction(signature_M_ATA, "finalized");
+//         console.log(`Transaction successful: ${signature_M_ATA}`);
+//     } catch (error) {
+//         console.error("Error sending transaction:", error);
+//     }
+// }
 
 
 
 
 
-            console.log("hi3")
+
+         //   console.log("hi3")
 
             // const payerKeypair = wallet.adapter; // Access the wallet's public key (signer required here)
             // const signature_M_ATA = await connection.sendTransaction(transaction_M_ATA, [payerKeypair]); // Use the correct payer keypair here
             // await connection.confirmTransaction(signature_M_ATA, "finalized");
 
-            console.log("hi4")
+            // console.log("hi4")
 
-            console.log("Merchant USDC token account:", merchantUSDCTokenAccount.toBase58());
+
 
 
 
@@ -112,7 +158,7 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
                 )
             ).json();
 
-            console.log(quoteResponse);
+            // console.log(quoteResponse);
 
             const jsonPostStrigify = JSON.stringify({
                 quoteResponse,
@@ -122,7 +168,7 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
                 wrapAndUnwrapSol: true,
             });
 
-            console.log(jsonPostStrigify);
+            // console.log(jsonPostStrigify);
 
             // Execute the swap
             const swapResponse = await (
@@ -135,12 +181,17 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
                 })
             ).json();
 
-            console.log(swapResponse);
+            // console.log(swapResponse);
+
+
+
+
+
 
             const transactionBase64 = swapResponse.swapTransaction;
 
             if (!transactionBase64) {
-                console.error("Error: swapResponse.swapTransaction is undefined or null");
+                // console.error("Error: swapResponse.swapTransaction is undefined or null");
                 return;
             }
 
@@ -151,11 +202,11 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
 
             const transaction = VersionedTransaction.deserialize(transactionBinary);
 
-            transaction.feePayer = publicKey; // Set the transaction fee payer
+            transaction.feePayer = publicKey;
 
 
             if (!transactionBase64) {
-                console.error("Error: swapResponse.swapTransaction is undefined or null");
+                // console.error("Error: swapResponse.swapTransaction is undefined or null");
                 return;
             }
 
@@ -166,14 +217,20 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
                 preflightCommitment: "finalized",
             });
 
+
+            // const url = `https://solscan.io/tx/${signature}`;
+            // console.log(`Transaction successful: ${url}`);
+            // setTransactionUrl(url);
+
+
             // Confirm transaction
-            const confirmation = await connection.confirmTransaction(signature, "finalized");
+            const confirmation = await connection.confirmTransaction(signature, "confirmed");
 
             if (confirmation.value.err) {
                 throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
             } else {
                 const url = `https://solscan.io/tx/${signature}`;
-                console.log(`Transaction successful: ${url}`);
+                // console.log(`Transaction successful: ${url}`);
                 setTransactionUrl(url);
             }
         } catch (err) {
@@ -182,6 +239,7 @@ export const useSwap = (inputTokenAddress, outAmount, slippageBps, MERCHANT_ACCO
         } finally {
             setLoading(false);
         }
+
     };
 
     return { swapTokens, loading, error, transactionUrl };
