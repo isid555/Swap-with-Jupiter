@@ -118,7 +118,6 @@ const SwapInterface = () => {
 
                 </p>
             )}
-            <TransactionPopup transactionUrl={"https://solscan.io/tx/5NT5BZyvLJzWXTepo9uvK8z2VHMCGfDAZvStE9GbHrsSNBi3gFR1k4fN7std48VxpKu2MrukcVpczpGzuCf1Cqce"}  />
         </div>
     );
 };
