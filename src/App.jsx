@@ -19,6 +19,7 @@ import SwapInterface from "./components/SwapInterface.jsx";
 import { NavBar } from "./components/NavBar.jsx";
 import backgroundImg from "./assets/img_2.png";
 import "./App.css";
+import Footer from "./components/Footer.jsx";
 
 // Wallet adapters
 const wallets = [
@@ -57,7 +58,10 @@ function App() {
                                 <div className="backdrop-blur-md bg-black/30 p-6 rounded-xl shadow-xl">
                                     <SolanaDashboard />
                                 </div>
+
+
                             </div>
+                            <Footer/>
                         </div>
                     </div>
                 </WalletModalProvider>

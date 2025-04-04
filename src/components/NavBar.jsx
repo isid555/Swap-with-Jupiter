@@ -4,7 +4,8 @@ import {
     Typography,
     useMediaQuery,
     useTheme,
-    Box
+    Box,
+    Tooltip
 } from "@mui/material";
 import {
     WalletMultiButton,
@@ -60,6 +61,10 @@ export function NavBar() {
                         alignItems: "center"
                     }}
                 >
+
+
+                    
+
                     <WalletMultiButton style={{
                         background: "linear-gradient(90deg, #8e2de2, #4a00e0)",
                         color: "#fff",
