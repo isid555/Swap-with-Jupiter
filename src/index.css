@@ -1,2 +1,25 @@
 @import "tailwindcss";
 @import '@solana/wallet-adapter-react-ui/styles.css';
+
+@keyframes shine {
+  0% {
+    background-position: -200%;
+  }
+  100% {
+    background-position: 200%;
+  }
+}
+
+.shiny-white {
+  background: linear-gradient(
+    110deg,
+    #888 10%,
+    #fff 30%,
+    #888 50%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 2.5s linear infinite;
+}
